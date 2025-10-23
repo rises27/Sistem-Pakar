@@ -1,3 +1,3 @@
 # Sistem-Pakar
 
-Sistem pakar ini merupaka replikasi dari penelitian terdahulu terkait penyakit Osteoporosis
+Sistem pakar ini merupakan replikasi dari penelitian terdahulu terkait penyakit Osteoporosis
