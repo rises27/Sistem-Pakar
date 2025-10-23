@@ -1,1 +1,72 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Rice Expert System - Forward Chaining + CF</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1>Rice Pest & Disease Expert System</h1>
+    <p>Pilih gejala yang terlihat pada tanaman (centang). System akan menggunakan forward chaining & CF.</p>
+
+    <form id="form">
+      <div class="grid">
+        {% for code, desc in gejala.items() %}
+          <label class="chk"><input type="checkbox" name="gejala" value="{{code}}"> <strong>{{code}}</strong> - {{desc}}</label>
+        {% endfor %}
+      </div>
+
+      <div style="margin-top:12px">
+        <button type="submit">Diagnosa</button>
+        <button type="button" id="clear">Bersihkan</button>
+      </div>
+    </form>
+
+    <div id="hasil" class="hasil"></div>
+  </div>
+
+<script>
+document.getElementById("form").addEventListener("submit", async function(e){
+  e.preventDefault();
+  const selected = Array.from(document.querySelectorAll('input[name="gejala"]:checked')).map(el=>el.value);
+  if(selected.length===0){ alert("Pilih minimal 1 gejala."); return; }
+
+  // Default fact CFs taken from paper's tables (you can let user edit this if wanted)
+  const defaultFactCF = {
+    "A1":0.95,"A2":0.85,"A3":0.60,"A5":0.75,"A6":0.95,"A7":0.95,"A8":0.95,"A9":0.75,"A10":0.85,
+    "B1":0.75,"B2":0.85,"B4":0.85,"B5":0.45,"B7":0.75,"B8":0.75,"B9":0.95,"B10":0.85,"B11":0.70,
+    "B12":0.75,"B13":0.70,"B14":0.75,"B15":0.95,"B16":0.95,"B17":0.95,"B18":0.85,"B19":0.85,"B20":0.85,"B21":0.70
+  };
+
+  const resp = await fetch("/diagnose", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({gejala:selected, fact_cfs: defaultFactCF})
+  });
+  const data = await resp.json();
+  const out = document.getElementById("hasil");
+  if(!data.results || data.results.length===0){
+    out.innerHTML = "<p>Tidak ditemukan diagnosa.</p>"; return;
+  }
+  let html = "<h2>Hasil Diagnosa (urut berdasarkan CF)</h2>";
+  data.results.forEach(r=>{
+    html += `<div class="card"><h3>${r.label} — CF: ${(r.combined_cf*100).toFixed(1)}%</h3>`;
+    html += `<div class="muted">Aturan terlibat:</div>`;
+    r.sources.forEach(s=>{
+      html += `<pre class="trace">${s.rule_id} : IF ${s.matched_facts.join(" ∧ ")} THEN ${s.conclusion} [rule_cf=${s.rule_cf}]\\nparallel_cf=${s.parallel_cf}, sequential_cf=${s.sequential_cf}</pre>`;
+    });
+    html += "</div>";
+  });
+  out.innerHTML = html;
+});
+
+document.getElementById("clear").addEventListener("click", function(){
+  document.querySelectorAll('input[name="gejala"]').forEach(cb=>cb.checked=false);
+  document.getElementById("hasil").innerHTML = "";
+});
+</script>
+</body>
+</html>
 
