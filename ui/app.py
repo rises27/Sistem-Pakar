@@ -5,55 +5,62 @@ from inference_engine.forward_cf import load_rules, forward_infer
 app = Flask(__name__, template_folder="templates", static_folder="static")
 BASE = Path(__file__).resolve().parents[1]
 
-# Gejala mapping (kode -> deskripsi) dari tabel di jurnal
+# Gejala dikategorikan
 GEJALA = {
-"A1":"Leaves or edges of the leaves are brownish-gray",
-"A2":"Leaves have brown spots shaped like a rhombus",
-"A3":"Leaves have narrow, elongated brown spots",
-"A5":"White patches on the leaves in the form of lines or tubes / leaf rolls",
-"A6":"The stem dries and at the base of the stem looks brown",
-"A7":"Shoots of rice stem dry and easily removed",
-"A8":"Inside the plant stem, there are larvae/caterpillars",
-"A9":"Rice stalks collapse, rats sighted",
-"A10":"Black spots in rice grains",
-"B1":"Yellow leaves then dry",
-"B2":"The shoots or edges of the leaves are brownish-gray and then spread",
-"B4":"Rice panicles are rotten or broken in the generative phase",
-"B5":"The stems and midribs of the leaves are rotten so the plants fall",
-"B7":"Few panicles and hollow rice grains",
-"B8":"Rice grains are not fully filled or empty",
-"B9":"The stem of the plant is yellow or brownish-red and there is a black bed",
-"B10":"The remaining rice seeds fall / birds in the fields / taste or color changes",
-"B11":"There is a plant wilting and dying at the beginning of the growth",
-"B12":"Yellow-orange plant leaves",
-"B13":"Dwarf plant growth",
-"B14":"Plant growth is inhibited",
-"B15":"Young plants die and dry out",
-"B16":"Young plants die and dry out (alternate symptom)",
-"B17":"Excess use of N fertilizer",
-"B18":"Other pest symptom",
-"B19":"Footprints found around the rice fields",
-"B20":"Rat holes around the rice fields",
-"B21":"Other damage factors"
+    "Kerusakan pada Daun": {
+        "A1": "Ujung atau tepi daun berwarna cokelat keabu-abuan",
+        "A2": "Daun memiliki bercak cokelat berbentuk belah ketupat",
+        "A3": "Daun memiliki bercak cokelat sempit dan memanjang",
+        "A4": "Terdapat bercak putih pada daun berupa garis atau gulungan",
+        "A5": "Daun berwarna kuning hingga oranye kekuningan, terlihat wereng hijau pada daun",
+        "B1": "Daun menguning lalu mengering",
+        "B2": "Ujung atau tepi daun berwarna cokelat keabu-abuan dan kemudian menyebar ke seluruh daun",
+        "B3": "Ujung dan tepi daun mengering serta layu"
+    },
+    "Kerusakan pada Batang": {
+        "A6": "Batang mengering dan bagian pangkal batang tampak cokelat akibat wereng cokelat",
+        "A7": "Pucuk batang padi mengering dan mudah dicabut",
+        "A8": "Di dalam batang tanaman terdapat larva atau ulat",
+        "A9": "Batang tanaman berwarna kuning atau cokelat kemerahan dan terdapat bercak hitam",
+        "A10": "Batang padi roboh, terlihat adanya serangan tikus",
+        "B4": "Malai padi busuk atau patah pada fase generatif",
+        "B5": "Batang dan tulang daun membusuk sehingga tanaman rebah",
+        "B6": "Tangkai malai padi patah dan rusak"
+    },
+    "Kerusakan pada Gabah": {
+        "A11": "Terdapat bercak hitam pada gabah",
+        "A12": "Gabah rontok, terlihat burung di area sawah",
+        "B7": "Jumlah malai sedikit dan gabah banyak yang kosong",
+        "B8": "Gabah tidak terisi penuh atau hampa",
+        "B9": "Malai padi berdiri tegak namun gabah tidak terisi penuh atau hampa",
+        "B10": "Warna gabah berubah dan rasanya menjadi tidak enak"
+    },
+    "Kerusakan akibat Faktor Luar": {
+        "B11": "Tanaman layu dan mati pada awal pertumbuhan",
+        "B12": "Daun tanaman berwarna kuning oranye",
+        "B13": "Pertumbuhan tanaman kerdil",
+        "B14": "Pertumbuhan tanaman terhambat",
+        "B16": "Tanaman muda mati dan mengering",
+        "B17": "Penggunaan pupuk nitrogen (N) secara berlebihan",
+        "B20": "Terdapat jejak kaki dan lubang tikus di sekitar sawah"
+    }
 }
 
 PENYAKIT = {
-"P01":"Bacterial leaf blight",
-"P02":"BLAS disease",
-"P03":"Narrow brown leaf spot",
-"P04":"Green leafhopper & Tungro",
-"P05":"Brown planthopper",
-"P06":"Rice stem borer",
-"P07":"Black rice bug",
-"P08":"Rice field rat",
-"P09":"Stinky rice bug"
+    "P01": "Hawar Daun Bakteri",
+    "P02": "Penyakit BLAS",
+    "P03": "Bercak Daun Cokelat Sempit",
+    "P04": "Wereng Hijau & Tungro",
+    "P05": "Wereng Cokelat",
+    "P06": "Penggerek Batang Padi",
+    "P07": "Serangga Padi Hitam",
+    "P08": "Tikus Sawah",
+    "P09": "Serangga Padi Berbau"
 }
+
 
 RULES_PATH = BASE / ".." / "C:\\Users\\F4QIH\\OneDrive\\Documents\\Perkuliahan\\Tugas Kuliah\\Semester 5\\Sistem Pakar\\Sistem pakar berbasis rule-based, forward chaining, dan CF\\rules.json"
 RULES_PATH = RULES_PATH.resolve()
-
-def load_rules_wrapper():
-    return load_rules(RULES_PATH)
 
 @app.route("/")
 def index():
@@ -63,14 +70,12 @@ def index():
 def diagnose():
     data = request.json
     selected = data.get("gejala", [])
-    fact_cfs = data.get("fact_cfs", {})  # optional: client may send per-fact CFs
-    rules = load_rules_wrapper()
+    fact_cfs = data.get("fact_cfs", {})
+    rules = load_rules(RULES_PATH)
     results = forward_infer(selected, fact_cfs, rules)
-    # attach readable label
     for r in results:
         r["label"] = PENYAKIT.get(r["conclusion"], r["conclusion"])
-    return jsonify({"results":results})
+    return jsonify({"results": results})
 
 if __name__ == "__main__":
     app.run(debug=True)
-
