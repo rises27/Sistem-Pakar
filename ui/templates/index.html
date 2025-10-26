@@ -1,76 +1,108 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Rice Expert System - Forward Chaining + CF</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <title>Diagnosa Penyakit</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        table {
+            width: 100%;
+            text-align: center;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .card {
+            border: 1px solid #ddd;
+        }
+        h5 {
+            margin-bottom: 0.5rem;
+        }
+    </style>
 </head>
-<body>
-  <div class="container">
-    <h1>Rice Pest & Disease Expert System</h1>
-    <p>Pilih gejala yang terlihat pada tanaman berdasarkan kategori di bawah ini.</p>
+<body class="p-4">
 
-    <form id="form">
-      {% for category, items in gejala.items() %}
-        <div class="category" style="background-color: #faf3dd; margin-bottom: 15px; border-radius: 15px;; padding: 10px;">
-          <h2>{{ category }}</h2>
-          <div class="grid">
-            {% for code, desc in items.items() %}
-              <label class="chk">
-                <input type="checkbox" name="gejala" value="{{code}}"> <strong>{{code}}</strong> - {{desc}}
-              </label>
-            {% endfor %}
-          </div>
+    <h2 class="mb-3">Pilih Tingkat Keyakinan untuk Setiap Gejala</h2>
+
+    <form id="diagnose-form" class="mb-4">
+        {% for kode, nama in gejala.items() %}
+        <div class="card mb-3 p-3">
+            <h5>{{ nama }}</h5>
+            <table class="table table-bordered mb-0">
+                <tr>
+                    <th>Tidak</th>
+                    <th>Tidak tahu</th>
+                    <th>Mungkin</th>
+                    <th>Kemungkinan besar</th>
+                    <th>Hampir pasti</th>
+                    <th>Pasti</th>
+                </tr>
+                <tr>
+                    <td><input type="radio" name="cf_{{ kode }}" value="0"></td>
+                    <td><input type="radio" name="cf_{{ kode }}" value="0.2"></td>
+                    <td><input type="radio" name="cf_{{ kode }}" value="0.4"></td>
+                    <td><input type="radio" name="cf_{{ kode }}" value="0.6"></td>
+                    <td><input type="radio" name="cf_{{ kode }}" value="0.8"></td>
+                    <td><input type="radio" name="cf_{{ kode }}" value="1.0"></td>
+                </tr>
+            </table>
         </div>
-      {% endfor %}
-      <div style="margin-top:12px">
-        <button type="submit">Diagnosa</button>
-        <button type="button" id="clear">Bersihkan</button>
-      </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-primary mt-3">Diagnosa</button>
     </form>
 
-    <div id="hasil" class="hasil"></div>
-  </div>
+    <div id="hasil" class="mt-4"></div>
 
-<script>
-document.getElementById("form").addEventListener("submit", async function(e){
-  e.preventDefault();
-  const selected = Array.from(document.querySelectorAll('input[name="gejala"]:checked')).map(el=>el.value);
-  if(selected.length===0){ alert("Pilih minimal 1 gejala."); return; }
+    <script>
+        document.getElementById("diagnose-form").addEventListener("submit", async function(e) {
+            e.preventDefault();
 
-  const defaultFactCF = {
-    "A1":0.95,"A2":0.85,"A3":0.60,"A5":0.75,"A6":0.95,"A7":0.95,"A8":0.95,"A9":0.75,"A10":0.85,
-    "B1":0.75,"B2":0.85,"B4":0.85,"B5":0.45,"B7":0.75,"B8":0.75,"B9":0.95,"B10":0.85,"B11":0.70,
-    "B12":0.75,"B13":0.70,"B14":0.75,"B15":0.95,"B16":0.95,"B17":0.95,"B18":0.85,"B19":0.85,"B20":0.85,"B21":0.70
-  };
+            const selected = [];
+            const fact_cfs = {};
 
-  const resp = await fetch("/diagnose", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({gejala:selected, fact_cfs: defaultFactCF})
-  });
-  const data = await resp.json();
-  const out = document.getElementById("hasil");
-  if(!data.results || data.results.length===0){
-    out.innerHTML = "<p>Tidak ditemukan diagnosa.</p>"; return;
-  }
-  let html = "<h2>Hasil Diagnosa</h2>";
-  data.results.forEach(r=>{
-    html += `<div class="card"><h3>${r.label} — CF: ${(r.combined_cf*100).toFixed(1)}%</h3>`;
-    html += `<div class="muted">Aturan yang terlibat:</div>`;
-    r.sources.forEach(s=>{
-      html += `<pre class="trace">${s.rule_id}: IF ${s.matched_facts.join(" ∧ ")} THEN ${s.conclusion}<br>parallel_cf=${s.parallel_cf}, sequential_cf=${s.sequential_cf}</pre>`;
-    });
-    html += "</div>";
-  });
-  out.innerHTML = html;
-});
+            // Ambil semua input radio yang terpilih
+            document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+                const kode = radio.name.replace("cf_", "");
+                selected.push(kode);
+                fact_cfs[kode] = parseFloat(radio.value);
+            });
 
-document.getElementById("clear").addEventListener("click", function(){
-  document.querySelectorAll('input[name="gejala"]').forEach(cb=>cb.checked=false);
-  document.getElementById("hasil").innerHTML = "";
-});
-</script>
+            // Kirim ke Flask
+            const res = await fetch("/diagnose", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ gejala: selected, fact_cfs })
+            });
+
+            const data = await res.json();
+            tampilkanHasil(data.results);
+        });
+
+        function tampilkanHasil(results) {
+            const hasilDiv = document.getElementById("hasil");
+            hasilDiv.innerHTML = "<h4>Hasil Diagnosa:</h4>";
+            if (results.length === 0) {
+                hasilDiv.innerHTML += "<p>Tidak ditemukan penyakit yang sesuai.</p>";
+                return;
+            }
+            results.forEach(r => {
+                hasilDiv.innerHTML += `
+                    <div class="alert alert-info mb-2">
+                        <strong>${r.label}</strong><br>
+                        Tingkat Keyakinan: ${(r.combined_cf * 100).toFixed(1)}%
+                    </div>
+                `;
+            });
+        }
+    </script>
+
 </body>
 </html>
