@@ -1,3 +1,3 @@
 # Sistem-Pakar
 
-Sistem pakar ini membahas terkait tanaman padi yang mengalami gejala atau masalah, tujuan dibuatnya sistem pakar ini agar dapat mendiagnosa tanaman melalui ciri-ciri yang terlihat pada tanaman
+Sistem pakar ini membahas terkait gejala yang dialami oleh ayam dan hasilnya akan mendiagnosa ayam ternak tersebut memiliki penyakit yang dialami
