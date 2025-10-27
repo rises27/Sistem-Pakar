@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-def load_rules(filename="C:\\Users\\F4QIH\\OneDrive\\Documents\\Perkuliahan\\Tugas Kuliah\\Semester 5\\Sistem Pakar\\Sistem pakar berbasis rule-based, forward chaining, dan CF\\rules.json"):
+def load_rules(filename="C:\\Users\\risda\\OneDrive\\Documents\\Tugas Kuliah\\Sistem Pakar\\rules.json"):
     """Load rules.json (default: parent folder rules.json)."""
     if filename is None:
         filename = Path(__file__).resolve().parents[1] / "rules.json"
