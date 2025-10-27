@@ -1,5 +1,11 @@
 from flask import Flask, render_template, request, jsonify
 from pathlib import Path
+import sys
+
+# Menambahkan root direktori ke Python path
+BASE_DIR = Path(__file__).resolve().parent.parent
+sys.path.append(str(BASE_DIR))
+
 from inference_engine.forward_cf import load_rules, forward_infer
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
@@ -69,7 +75,7 @@ penyakit_dict = {
 }
 
 
-RULES_PATH = BASE / ".." / "C:\\Users\\F4QIH\\OneDrive\\Documents\\Perkuliahan\\Tugas Kuliah\\Semester 5\\Sistem Pakar\\Sistem pakar berbasis rule-based, forward chaining, dan CF\\rules.json"
+RULES_PATH = BASE / ".." / "C:\\Users\\risda\\OneDrive\\Documents\\Tugas Kuliah\\Sistem Pakar\\rules.json"
 RULES_PATH = RULES_PATH.resolve()
 
 @app.route("/")
