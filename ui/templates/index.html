@@ -91,12 +91,12 @@
             text-align: center;
             overflow: hidden;
         }
-        
+
         .choice-box:hover {
             border-color: #3498db;
             background: #f8f9fa;
         }
-        
+
         .choice-box input:checked + .checkmark,
         .choice-box input:checked ~ .checkmark {
             background: #3498db;
@@ -249,9 +249,12 @@
 
             // Ambil semua input radio yang terpilih
             document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
-                const kode = radio.name.replace("cf_", "");
-                selected.push(kode);
-                fact_cfs[kode] = parseFloat(radio.value);
+                if (parseFloat(radio.value) != 0)
+                {
+                    const kode = radio.name.replace("cf_", "");
+                    selected.push(kode);
+                    fact_cfs[kode] = parseFloat(radio.value);
+                }
             });
 
             // Kirim ke Flask
@@ -282,6 +285,6 @@
             });
         }
     </script>
-
+</div>
 </body>
 </html>
