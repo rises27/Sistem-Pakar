@@ -60,9 +60,9 @@ def forward_infer(selected_facts, user_cf_map, rules):
 if __name__ == "__main__":
     # quick example using the paper's example:
     rules = load_rules()
-    selected = ["G01","G17","G25","G35"]  # example from paper
+    selected = ["G01","G17","G25","G34"]  # example from paper
     fact_cf = {
-        "G01":1,"G17":1,"G25":1,"G35":1
+        "G01":1,"G17":1,"G25":1,"G34":1
     }
     out = forward_infer(selected, fact_cf, rules)
     import pprint
