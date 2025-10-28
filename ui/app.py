@@ -45,17 +45,16 @@ gejala_dict = {
     "G30": "Feses berdarah",
     "G31": "Berkelompok di sudut kandang",
     "G32": "Mematuk area kloaka",
-    "G33": "Mematuk area kloaka",
-    "G34": "Telur lebih kecil",
-    "G35": "Lumpuh pada tembolok",
-    "G36": "Bernapas lewat mulut sambil menjulurkan leher",
-    "G37": "Batuk berdarah",
-    "G38": "Tidur dengan paruh menyentuh lantai",
-    "G39": "Duduk dengan posisi membungkuk",
-    "G40": "Terlihat mengantuk dengan bulu berdiri",
-    "G41": "Tubuh kurus",
-    "G42": "Ada lendir bercampur darah di rongga mulut",
-    "G43": "Kaki pincang"
+    "G33": "Telur lebih kecil",
+    "G34": "Lumpuh pada tembolok",
+    "G35": "Bernapas lewat mulut sambil menjulurkan leher",
+    "G36": "Batuk berdarah",
+    "G37": "Tidur dengan paruh menyentuh lantai",
+    "G38": "Duduk dengan posisi membungkuk",
+    "G39": "Terlihat mengantuk dengan bulu berdiri",
+    "G40": "Tubuh kurus",
+    "G41": "Ada lendir bercampur darah di rongga mulut",
+    "G42": "Kaki pincang"
 }
 
 penyakit_dict = {
